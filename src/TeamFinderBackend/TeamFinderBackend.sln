@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34701.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamFinder.UserService.API", "TeamFinder.UserService.API\TeamFinder.UserService.API.csproj", "{6437F747-B839-498E-8C40-0A55407D447D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamFinder.TeamMatchingService.API", "TeamFinder.TeamMatchingService.API\TeamFinder.TeamMatchingService.API.csproj", "{E673022F-435C-4761-A68F-711DACC47083}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TeamFinder.NotificationService.API", "TeamFinder.NotificationService.API\TeamFinder.NotificationService.API.csproj", "{EF1840ED-675A-48E8-87A4-066EC7BA4887}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6437F747-B839-498E-8C40-0A55407D447D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6437F747-B839-498E-8C40-0A55407D447D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6437F747-B839-498E-8C40-0A55407D447D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6437F747-B839-498E-8C40-0A55407D447D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E673022F-435C-4761-A68F-711DACC47083}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E673022F-435C-4761-A68F-711DACC47083}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E673022F-435C-4761-A68F-711DACC47083}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E673022F-435C-4761-A68F-711DACC47083}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF1840ED-675A-48E8-87A4-066EC7BA4887}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF1840ED-675A-48E8-87A4-066EC7BA4887}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF1840ED-675A-48E8-87A4-066EC7BA4887}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF1840ED-675A-48E8-87A4-066EC7BA4887}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C9B8546C-6925-41BB-BDE0-FDC368B14781}
+	EndGlobalSection
+EndGlobal
