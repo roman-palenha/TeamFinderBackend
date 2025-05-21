@@ -65,5 +65,20 @@ namespace TeamFinder.NotificationService.API.Controllers
                 return StatusCode(500, new { message = $"Failed to send notification to team {teamId}" });
             }
         }
+
+        [HttpPost("email")]
+        public async Task<IActionResult> SendEmail([FromBody] EmailNotificationRequest request)
+        {
+            try
+            {
+                await _notificationService.SendEmailToUserAsync(request.Email, request.Notification);
+                return Ok(new { message = $"Email notification sent to {request.Email} successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending email notification to {request.Email}");
+                return StatusCode(500, new { message = $"Failed to send email notification to {request.Email}" });
+            }
+        }
     }
 }

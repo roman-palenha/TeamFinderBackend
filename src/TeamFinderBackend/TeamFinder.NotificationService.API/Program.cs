@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TeamFinder.NotificationService.API.Consumers;
@@ -46,6 +47,7 @@ builder.Services.AddAuthentication(options =>
 });
 // Add RabbitMQ consumers as hosted services
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddHostedService<UserEventsConsumer>();
 builder.Services.AddHostedService<TeamEventsConsumer>();

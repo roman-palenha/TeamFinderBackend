@@ -186,7 +186,7 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 Role = TeamRole.Member
             };
 
-            team.Members.Add(teamMember);
+            _context.TeamMembers.Add(teamMember);
             await _context.SaveChangesAsync();
 
             // Publish team joined event

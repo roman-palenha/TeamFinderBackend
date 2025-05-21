@@ -15,7 +15,7 @@ builder.Services.AddSwaggerGen();
 
 // Add DbContext
 builder.Services.AddDbContext<TeamDbContext>(options =>
-    options.UseInMemoryDatabase("TeamDb")); // For simplicity, using InMemoryDb
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddCors(options =>
 {

@@ -1,9 +1,39 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, ListGroup, Badge, Alert, Modal } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { getTeamById, joinTeam, leaveTeam, deleteTeam } from '../services/teamService';
+
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../components/ui/dialog';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { Separator } from '../components/ui/separator';
+import { Skeleton } from '../components/ui/skeleton';
+import {
+  AlertCircle,
+  ArrowLeft,
+  Users,
+  Gamepad2,
+  TrendingUp,
+  UserPlus,
+  UserMinus,
+  Trash2,
+  Calendar,
+  Crown,
+  Shield,
+  User
+} from 'lucide-react';
 
 const TeamDetailPage = () => {
   const { id } = useParams();
@@ -14,14 +44,14 @@ const TeamDetailPage = () => {
   const [team, setTeam] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isActionInProgress, setIsActionInProgress] = useState(false);
   
   // Check if current user is the team owner
-  const isOwner = team && currentUser && team.ownerId === currentUser.id;
+  const isOwner = team && currentUser && team.ownerId === currentUser.username;
   
   // Check if current user is a member of this team
-  const isMember = team && currentUser && team.members.some(member => member.userId === currentUser.id);
+  const isMember = team && currentUser && team.members.some(member => member.userId === currentUser.username);
   
   // Check if team is full
   const isTeamFull = team && team.currentPlayers >= team.maxPlayers;
@@ -94,7 +124,7 @@ const TeamDetailPage = () => {
     setIsActionInProgress(true);
     
     try {
-      const result = await leaveTeam(id, currentUser.id);
+      const result = await leaveTeam(id, currentUser.username);
       
       if (result.success) {
         fetchTeamDetails(); // Refresh team data
@@ -115,172 +145,278 @@ const TeamDetailPage = () => {
     setIsActionInProgress(true);
     
     try {
-      const result = await deleteTeam(id, currentUser.id);
+      const result = await deleteTeam(id, currentUser.username);
       
       if (result.success) {
         navigate('/teams');
       } else {
         setError(result.error);
-        setShowDeleteModal(false);
+        setShowDeleteDialog(false);
       }
     } catch (error) {
       console.error('Error deleting team:', error);
       setError('Failed to delete team. Please try again.');
-      setShowDeleteModal(false);
+      setShowDeleteDialog(false);
     } finally {
       setIsActionInProgress(false);
     }
   };
   
+  // Helper function to render role icon
+  const getRoleIcon = (role) => {
+    switch (role) {
+      case 'Owner':
+        return <Crown className="h-4 w-4 text-amber-500" />;
+      case 'Captain':
+        return <Shield className="h-4 w-4 text-blue-500" />;
+      default:
+        return <User className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+  
+  // Helper to get initials from username
+  const getInitials = (username) => {
+    if (!username) return '?';
+    return username.charAt(0).toUpperCase();
+  };
+  
   if (isLoading) {
-    return <Container><p>Loading team details...</p></Container>;
+    return (
+      <div className="container py-8">
+        <div className="flex items-center mb-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/teams')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Teams
+          </Button>
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+              <CardFooter>
+                <Skeleton className="h-10 w-full" />
+              </CardFooter>
+            </Card>
+          </div>
+          <div>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-2/3" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Skeleton className="h-40 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
   }
   
   if (error) {
     return (
-      <Container>
-        <Alert variant="danger">{error}</Alert>
-        <Button variant="primary" onClick={() => navigate('/teams')}>
+      <div className="container py-8">
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <Button onClick={() => navigate('/teams')}>
           Back to Teams
         </Button>
-      </Container>
+      </div>
     );
   }
   
   if (!team) {
     return (
-      <Container>
-        <Alert variant="warning">Team not found</Alert>
-        <Button variant="primary" onClick={() => navigate('/teams')}>
+      <div className="container py-8">
+        <Alert className="mb-6">
+          <AlertDescription>Team not found</AlertDescription>
+        </Alert>
+        <Button onClick={() => navigate('/teams')}>
           Back to Teams
         </Button>
-      </Container>
+      </div>
     );
   }
   
   return (
-    <Container>
-      <Row>
-        <Col md={8}>
-          <Card className="shadow-sm mb-4">
-            <Card.Body>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h1 className="mb-0">{team.name}</h1>
+    <div className="container py-8">
+      <div className="flex items-center mb-6">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/teams')} className="group">
+          <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          Back to Teams
+        </Button>
+      </div>
+      
+      <div className="grid md:grid-cols-3 gap-6">
+        {/* Main Team Info */}
+        <div className="md:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-start justify-between">
                 <div>
+                  <CardTitle className="text-2xl">{team.name}</CardTitle>
+                  <CardDescription className="flex items-center mt-1">
+                    <Gamepad2 className="h-4 w-4 mr-1" />
+                    <span>{team.game}</span>
+                    <span className="mx-2">•</span>
+                    <span>{team.platform}</span>
+                    <span className="mx-2">•</span>
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    <span>{team.skillLevel}</span>
+                  </CardDescription>
+                </div>
+                <div className="flex items-center space-x-2">
                   {!team.isOpen && (
-                    <Badge bg="secondary" className="me-2">Closed</Badge>
+                    <Badge variant="secondary">Closed</Badge>
                   )}
-                  <Badge bg="info">
-                    {team.currentPlayers} / {team.maxPlayers} Players
+                  <Badge variant="outline" className="flex items-center">
+                    <Users className="h-4 w-4 mr-1" />
+                    {team.currentPlayers} / {team.maxPlayers}
                   </Badge>
                 </div>
               </div>
-              
-              <div className="mb-4">
-                <h5>Team Details</h5>
-                <ListGroup variant="flush">
-                  <ListGroup.Item className="d-flex justify-content-between align-items-center">
-                    <span>Game:</span>
-                    <span>{team.game}</span>
-                  </ListGroup.Item>
-                  <ListGroup.Item className="d-flex justify-content-between align-items-center">
-                    <span>Platform:</span>
-                    <span>{team.platform}</span>
-                  </ListGroup.Item>
-                  <ListGroup.Item className="d-flex justify-content-between align-items-center">
-                    <span>Skill Level:</span>
-                    <span>{team.skillLevel}</span>
-                  </ListGroup.Item>
-                  <ListGroup.Item className="d-flex justify-content-between align-items-center">
-                    <span>Created:</span>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              {/* Team Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-1">
+                  <span className="text-sm text-muted-foreground">Created</span>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{new Date(team.createdAt).toLocaleDateString()}</span>
-                  </ListGroup.Item>
-                </ListGroup>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col space-y-1">
+                  <span className="text-sm text-muted-foreground">Status</span>
+                  <div className="flex items-center">
+                    {team.isOpen ? (
+                      <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">
+                        Open for new members
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-gray-50 text-gray-700 hover:bg-gray-50">
+                        Closed
+                      </Badge>
+                    )}
+                  </div>
+                </div>
               </div>
-              
-              <div>
-                <h5>Team Actions</h5>
-                {isOwner ? (
-                  <Button 
-                    variant="danger" 
-                    onClick={() => setShowDeleteModal(true)}
-                    disabled={isActionInProgress}
-                  >
-                    Delete Team
-                  </Button>
-                ) : isMember ? (
-                  <Button 
-                    variant="warning" 
-                    onClick={handleLeaveTeam}
-                    disabled={isActionInProgress}
-                  >
-                    Leave Team
-                  </Button>
-                ) : (
-                  <Button 
-                    variant="primary" 
-                    onClick={handleJoinTeam}
-                    disabled={isActionInProgress || !team.isOpen || isTeamFull}
-                  >
-                    {!team.isOpen ? 'Team is Closed' : isTeamFull ? 'Team is Full' : 'Join Team'}
-                  </Button>
-                )}
-              </div>
-            </Card.Body>
+            </CardContent>
+            
+            <Separator />
+            
+            <CardFooter className="py-4">
+              {isOwner ? (
+                <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive" className="w-full sm:w-auto">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Team
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Delete Team</DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to delete the team "{team.name}"?
+                        This action cannot be undone.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        onClick={handleDeleteTeam}
+                        disabled={isActionInProgress}
+                      >
+                        {isActionInProgress ? 'Deleting...' : 'Delete Team'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              ) : isMember ? (
+                <Button 
+                  variant="outline" 
+                  className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                  onClick={handleLeaveTeam}
+                  disabled={isActionInProgress}
+                >
+                  <UserMinus className="h-4 w-4 mr-2" />
+                  {isActionInProgress ? 'Leaving...' : 'Leave Team'}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleJoinTeam}
+                  disabled={isActionInProgress || !team.isOpen || isTeamFull}
+                  className="w-full sm:w-auto"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  {!team.isOpen 
+                    ? 'Team is Closed' 
+                    : isTeamFull 
+                      ? 'Team is Full' 
+                      : isActionInProgress 
+                        ? 'Joining...' 
+                        : 'Join Team'}
+                </Button>
+              )}
+            </CardFooter>
           </Card>
-        </Col>
+        </div>
         
-        <Col md={4}>
-          <Card className="shadow-sm">
-            <Card.Header>
-              <h5 className="mb-0">Team Members ({team.currentPlayers})</h5>
-            </Card.Header>
-            <Card.Body>
-              <ListGroup variant="flush">
+        {/* Team Members */}
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                Team Members ({team.currentPlayers})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
                 {team.members.map(member => (
-                  <ListGroup.Item key={member.userId}>
-                    <div className="d-flex justify-content-between align-items-center">
+                  <div key={member.userId} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Avatar className="h-8 w-8 mr-3">
+                        <AvatarImage src="" alt={member.username} />
+                        <AvatarFallback>{getInitials(member.username)}</AvatarFallback>
+                      </Avatar>
                       <div>
-                        <div>{member.username}</div>
-                        <small className="text-muted">
-                          {member.role === 'Owner' ? 'Team Owner' : 
-                            member.role === 'Captain' ? 'Team Captain' : 'Member'}
-                        </small>
+                        <div className="font-medium">{member.username}</div>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          {getRoleIcon(member.role)}
+                          <span className="ml-1">
+                            {member.role === 'Owner' ? 'Team Owner' : 
+                              member.role === 'Captain' ? 'Team Captain' : 'Member'}
+                          </span>
+                        </div>
                       </div>
-                      {member.userId === currentUser?.id && (
-                        <Badge bg="primary">You</Badge>
-                      )}
                     </div>
-                  </ListGroup.Item>
+                    {member.userId === currentUser?.username && (
+                      <Badge>You</Badge>
+                    )}
+                  </div>
                 ))}
-              </ListGroup>
-            </Card.Body>
+              </div>
+            </CardContent>
           </Card>
-        </Col>
-      </Row>
-      
-      {/* Delete Team Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Delete Team</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete the team "{team.name}"? This action cannot be undone.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Cancel
-          </Button>
-          <Button 
-            variant="danger" 
-            onClick={handleDeleteTeam}
-            disabled={isActionInProgress}
-          >
-            {isActionInProgress ? 'Deleting...' : 'Delete Team'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 };
 

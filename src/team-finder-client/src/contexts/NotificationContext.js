@@ -20,7 +20,7 @@ export function NotificationProvider({ children }) {
     if (isAuthenticated && currentUser) {
       // Create the connection
       const newConnection = new HubConnectionBuilder()
-        .withUrl('http://localhost:7003/notificationHub')
+        .withUrl('http://localhost:5102/notificationHub')
         .configureLogging(LogLevel.Information)
         .withAutomaticReconnect()
         .build();

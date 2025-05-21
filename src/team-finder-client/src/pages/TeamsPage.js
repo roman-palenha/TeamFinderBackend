@@ -1,8 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Form, ListGroup, Badge, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { getTeams } from '../services/teamService';
 import { useAuth } from '../contexts/AuthContext';
+
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Label } from '../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Badge } from '../components/ui/badge';
+import { Skeleton } from '../components/ui/skeleton';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { AlertCircle, PlusCircle, Users, Gamepad2, TrendingUp, RefreshCw } from 'lucide-react';
 
 const TeamsPage = () => {
   const { currentUser } = useAuth();
@@ -39,8 +48,12 @@ const TeamsPage = () => {
     }
   };
   
-  const handleFilterChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSelectChange = (name, value) => {
     setFilters(prev => ({ ...prev, [name]: value }));
   };
   
@@ -54,139 +67,193 @@ const TeamsPage = () => {
   
   const applyUserPreferences = () => {
     setFilters({
-      game: currentUser.preferredGame || '',
-      platform: currentUser.gamingPlatform || '',
-      skillLevel: currentUser.skillLevel || ''
+      game: currentUser?.preferredGame || '',
+      platform: currentUser?.gamingPlatform || '',
+      skillLevel: currentUser?.skillLevel || ''
     });
   };
   
   return (
-    <Container>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Find Teams</h1>
-        <Link to="/teams/create">
-          <Button variant="primary">Create Team</Button>
-        </Link>
+    <div className="container py-8">
+      <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+        <h1 className="text-3xl font-bold">Find Teams</h1>
+        <Button asChild>
+          <Link to="/teams/create" className="flex items-center">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create Team
+          </Link>
+        </Button>
       </div>
       
-      <Row>
-        <Col md={3}>
-          <Card className="shadow-sm mb-4">
-            <Card.Header>
-              <h5 className="mb-0">Filters</h5>
-            </Card.Header>
-            <Card.Body>
-              <Form>
-                <Form.Group className="mb-3">
-                  <Form.Label>Game</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="game"
-                    value={filters.game}
-                    onChange={handleFilterChange}
-                    placeholder="Any game"
-                  />
-                </Form.Group>
-                
-                <Form.Group className="mb-3">
-                  <Form.Label>Platform</Form.Label>
-                  <Form.Select
-                    name="platform"
-                    value={filters.platform}
-                    onChange={handleFilterChange}
-                  >
-                    <option value="">Any platform</option>
-                    <option value="PC">PC</option>
-                    <option value="PlayStation">PlayStation</option>
-                    <option value="Xbox">Xbox</option>
-                    <option value="Nintendo Switch">Nintendo Switch</option>
-                    <option value="Mobile">Mobile</option>
-                  </Form.Select>
-                </Form.Group>
-                
-                <Form.Group className="mb-3">
-                  <Form.Label>Skill Level</Form.Label>
-                  <Form.Select
-                    name="skillLevel"
-                    value={filters.skillLevel}
-                    onChange={handleFilterChange}
-                  >
-                    <option value="">Any skill level</option>
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Pro">Pro</option>
-                  </Form.Select>
-                </Form.Group>
-                
-                <div className="d-grid gap-2">
-                  <Button variant="outline-primary" onClick={applyUserPreferences}>
-                    Use My Preferences
-                  </Button>
-                  <Button variant="outline-secondary" onClick={clearFilters}>
-                    Clear Filters
-                  </Button>
-                </div>
-              </Form>
-            </Card.Body>
+      <div className="grid md:grid-cols-4 gap-6">
+        {/* Filters Section */}
+        <div className="md:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Filters</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="game">Game</Label>
+                <Input
+                  id="game"
+                  name="game"
+                  value={filters.game}
+                  onChange={handleInputChange}
+                  placeholder="Any game"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="platform">Platform</Label>
+                <Select 
+                  value={filters.platform} 
+                  onValueChange={(value) => handleSelectChange('platform', value)}
+                >
+                  <SelectTrigger id="platform">
+                    <SelectValue placeholder="Any platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Any">Any platform</SelectItem>
+                    <SelectItem value="PC">PC</SelectItem>
+                    <SelectItem value="PlayStation">PlayStation</SelectItem>
+                    <SelectItem value="Xbox">Xbox</SelectItem>
+                    <SelectItem value="Nintendo Switch">Nintendo Switch</SelectItem>
+                    <SelectItem value="Mobile">Mobile</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="skillLevel">Skill Level</Label>
+                <Select 
+                  value={filters.skillLevel} 
+                  onValueChange={(value) => handleSelectChange('skillLevel', value)}
+                >
+                  <SelectTrigger id="skillLevel">
+                    <SelectValue placeholder="Any skill level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Any">Any skill level</SelectItem>
+                    <SelectItem value="Beginner">Beginner</SelectItem>
+                    <SelectItem value="Intermediate">Intermediate</SelectItem>
+                    <SelectItem value="Advanced">Advanced</SelectItem>
+                    <SelectItem value="Pro">Pro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-2">
+              <Button 
+                variant="outline" 
+                className="w-full flex items-center justify-center" 
+                onClick={applyUserPreferences}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Use My Preferences
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="w-full flex items-center justify-center" 
+                onClick={clearFilters}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Clear Filters
+              </Button>
+            </CardFooter>
           </Card>
-        </Col>
+        </div>
         
-        <Col md={9}>
+        {/* Teams Grid */}
+        <div className="md:col-span-3">
           {isLoading ? (
-            <p>Loading teams...</p>
-          ) : error ? (
-            <Alert variant="danger">{error}</Alert>
-          ) : teams.length === 0 ? (
-            <Alert variant="info">
-              No teams found matching your criteria. Try adjusting your filters or create your own team!
-            </Alert>
-          ) : (
-            <Row xs={1} md={2} className="g-4">
-              {teams.map(team => (
-                <Col key={team.id}>
-                  <Card className="h-100 shadow-sm">
-                    <Card.Body>
-                      <div className="d-flex justify-content-between align-items-start">
-                        <Card.Title>{team.name}</Card.Title>
-                        {!team.isOpen && (
-                          <Badge bg="secondary">Closed</Badge>
-                        )}
-                      </div>
-                      
-                      <Card.Subtitle className="mb-2 text-muted">
-                        {team.game} • {team.platform} • {team.skillLevel}
-                      </Card.Subtitle>
-                      
-                      <ListGroup variant="flush" className="mb-3">
-                        <ListGroup.Item className="px-0">
-                          <div className="d-flex justify-content-between">
-                            <span>Team Size:</span>
-                            <span>{team.currentPlayers} / {team.maxPlayers}</span>
-                          </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item className="px-0">
-                          <div className="d-flex justify-content-between">
-                            <span>Created:</span>
-                            <span>{new Date(team.createdAt).toLocaleDateString()}</span>
-                          </div>
-                        </ListGroup.Item>
-                      </ListGroup>
-                      
-                      <div className="d-grid">
-                        <Link to={`/teams/${team.id}`}>
-                          <Button variant="primary" className="w-100">View Team</Button>
-                        </Link>
-                      </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map(i => (
+                <Card key={i} className="overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Skeleton className="h-10 w-full" />
+                  </CardFooter>
+                </Card>
               ))}
-            </Row>
+            </div>
+          ) : error ? (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : teams.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-10">
+                <div className="rounded-full bg-primary/10 p-3 mb-4">
+                  <Users className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">No teams found</h3>
+                <p className="text-muted-foreground text-center mb-6">
+                  No teams match your current filters. Try adjusting your search criteria or create your own team!
+                </p>
+                <Button asChild>
+                  <Link to="/teams/create">Create a Team</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {teams.map(team => (
+                <Card key={team.id} className="overflow-hidden flex flex-col">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle>{team.name}</CardTitle>
+                      {!team.isOpen && (
+                        <Badge variant="secondary">Closed</Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Gamepad2 className="h-4 w-4 mr-1" />
+                      <span>{team.game}</span>
+                      <span className="mx-2">•</span>
+                      <span>{team.platform}</span>
+                      <span className="mx-2">•</span>
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      <span>{team.skillLevel}</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Team Size:</span>
+                        <Badge variant="outline" className="font-normal">
+                          {team.currentPlayers} / {team.maxPlayers}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Created:</span>
+                        <span>{new Date(team.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button asChild className="w-full">
+                      <Link to={`/teams/${team.id}`}>View Team</Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
           )}
-        </Col>
-      </Row>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 };
 

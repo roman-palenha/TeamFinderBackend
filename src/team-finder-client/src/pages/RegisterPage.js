@@ -1,7 +1,14 @@
 import { useState } from 'react';
-import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Button } from '../components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -26,6 +33,15 @@ const RegisterPage = () => {
     setFormData({ ...formData, [name]: value });
     
     // Clear field-specific error when user starts typing
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
+  
+  const handleSelectChange = (name, value) => {
+    setFormData({ ...formData, [name]: value });
+    
+    // Clear field-specific error when user makes a selection
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -125,148 +141,166 @@ const RegisterPage = () => {
   };
   
   return (
-    <Container>
-      <Row className="justify-content-center">
-        <Col md={8} lg={6}>
-          <Card className="shadow">
-            <Card.Body className="p-4">
-              <h2 className="text-center mb-4">Create Your Account</h2>
-              
-              {submitError && (
-                <Alert variant="danger">{submitError}</Alert>
-              )}
-              
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Username</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    isInvalid={!!errors.username}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.username}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                
-                <Form.Group className="mb-3">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    isInvalid={!!errors.email}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.email}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                
-                <Form.Group className="mb-3">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    isInvalid={!!errors.password}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.password}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                
-                <Form.Group className="mb-3">
-                  <Form.Label>Confirm Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    isInvalid={!!errors.confirmPassword}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.confirmPassword}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                
-                <Form.Group className="mb-3">
-                  <Form.Label>Gaming Platform</Form.Label>
-                  <Form.Select
-                    name="gamingPlatform"
-                    value={formData.gamingPlatform}
-                    onChange={handleChange}
-                    isInvalid={!!errors.gamingPlatform}
-                  >
-                    <option value="">Select Platform</option>
-                    <option value="PC">PC</option>
-                    <option value="PlayStation">PlayStation</option>
-                    <option value="Xbox">Xbox</option>
-                    <option value="Nintendo Switch">Nintendo Switch</option>
-                    <option value="Mobile">Mobile</option>
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.gamingPlatform}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                
-                <Form.Group className="mb-3">
-                  <Form.Label>Preferred Game</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="preferredGame"
-                    value={formData.preferredGame}
-                    onChange={handleChange}
-                    isInvalid={!!errors.preferredGame}
-                    placeholder="e.g., Valorant, League of Legends, CS:GO"
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.preferredGame}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                
-                <Form.Group className="mb-4">
-                  <Form.Label>Skill Level</Form.Label>
-                  <Form.Select
-                    name="skillLevel"
-                    value={formData.skillLevel}
-                    onChange={handleChange}
-                    isInvalid={!!errors.skillLevel}
-                  >
-                    <option value="">Select Skill Level</option>
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Pro">Pro</option>
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.skillLevel}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                
-                <div className="d-grid">
-                  <Button 
-                    variant="primary" 
-                    type="submit" 
-                    size="lg" 
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Creating Account...' : 'Register'}
-                  </Button>
-                </div>
-              </Form>
-            </Card.Body>
-          </Card>
+    <div className="container max-w-md mx-auto py-10">
+      <Card>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">Create an account</CardTitle>
+          <CardDescription className="text-center">
+            Enter your details to register
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {submitError && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{submitError}</AlertDescription>
+            </Alert>
+          )}
           
-          <div className="text-center mt-3">
-            Already have an account? <Link to="/login">Login</Link>
-          </div>
-        </Col>
-      </Row>
-    </Container>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Username"
+                aria-invalid={!!errors.username}
+              />
+              {errors.username && (
+                <p className="text-sm text-destructive">{errors.username}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="your.email@example.com"
+                aria-invalid={!!errors.email}
+              />
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                aria-invalid={!!errors.password}
+              />
+              {errors.password && (
+                <p className="text-sm text-destructive">{errors.password}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                aria-invalid={!!errors.confirmPassword}
+              />
+              {errors.confirmPassword && (
+                <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="gamingPlatform">Gaming Platform</Label>
+              <Select 
+                name="gamingPlatform" 
+                value={formData.gamingPlatform}
+                onValueChange={(value) => handleSelectChange('gamingPlatform', value)}
+              >
+                <SelectTrigger id="gamingPlatform" aria-invalid={!!errors.gamingPlatform}>
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PC">PC</SelectItem>
+                  <SelectItem value="PlayStation">PlayStation</SelectItem>
+                  <SelectItem value="Xbox">Xbox</SelectItem>
+                  <SelectItem value="Nintendo Switch">Nintendo Switch</SelectItem>
+                  <SelectItem value="Mobile">Mobile</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.gamingPlatform && (
+                <p className="text-sm text-destructive">{errors.gamingPlatform}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="preferredGame">Preferred Game</Label>
+              <Input
+                id="preferredGame"
+                name="preferredGame"
+                value={formData.preferredGame}
+                onChange={handleChange}
+                placeholder="e.g., Valorant, League of Legends, CS:GO"
+                aria-invalid={!!errors.preferredGame}
+              />
+              {errors.preferredGame && (
+                <p className="text-sm text-destructive">{errors.preferredGame}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="skillLevel">Skill Level</Label>
+              <Select 
+                name="skillLevel" 
+                value={formData.skillLevel}
+                onValueChange={(value) => handleSelectChange('skillLevel', value)}
+              >
+                <SelectTrigger id="skillLevel" aria-invalid={!!errors.skillLevel}>
+                  <SelectValue placeholder="Select skill level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                  <SelectItem value="Pro">Pro</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.skillLevel && (
+                <p className="text-sm text-destructive">{errors.skillLevel}</p>
+              )}
+            </div>
+            
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                'Register'
+              )}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link to="/login" className="text-primary underline-offset-4 hover:underline">
+              Login
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    </div>
   );
 };
 
