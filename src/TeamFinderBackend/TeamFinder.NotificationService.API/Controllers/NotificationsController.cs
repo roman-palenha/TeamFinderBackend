@@ -18,7 +18,6 @@ namespace TeamFinder.NotificationService.API.Controllers
             _logger = logger;
         }
 
-        // Test endpoint to send a notification to all users
         [HttpPost("broadcast")]
         public async Task<IActionResult> BroadcastNotification([FromBody] Notification notification)
         {
@@ -34,7 +33,6 @@ namespace TeamFinder.NotificationService.API.Controllers
             }
         }
 
-        // Test endpoint to send a notification to a specific user
         [HttpPost("user/{userId}")]
         public async Task<IActionResult> SendToUser(Guid userId, [FromBody] Notification notification)
         {
@@ -50,7 +48,6 @@ namespace TeamFinder.NotificationService.API.Controllers
             }
         }
 
-        // Test endpoint to send a notification to a specific team
         [HttpPost("team/{teamId}")]
         public async Task<IActionResult> SendToTeam(Guid teamId, [FromBody] Notification notification)
         {

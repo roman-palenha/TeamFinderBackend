@@ -34,14 +34,12 @@ namespace TeamFinder.NotificationService.API.Consumers
                 _connection = factory.CreateConnection();
                 _channel = _connection.CreateModel();
 
-                // Declare the exchange
                 _channel.ExchangeDeclare(
                     exchange: _exchangeName,
                     type: ExchangeType.Topic,
                     durable: true,
                     autoDelete: false);
 
-                // Declare the queue
                 var queueName = "notification_service_user_events";
                 _channel.QueueDeclare(
                     queue: queueName,
@@ -49,7 +47,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     exclusive: false,
                     autoDelete: false);
 
-                // Bind the queue to the exchange with routing keys
                 _channel.QueueBind(queue: queueName, exchange: _exchangeName, routingKey: "user.registered");
                 _channel.QueueBind(queue: queueName, exchange: _exchangeName, routingKey: "user.updated");
                 _channel.QueueBind(queue: queueName, exchange: _exchangeName, routingKey: "user.deleted");
@@ -83,18 +80,15 @@ namespace TeamFinder.NotificationService.API.Consumers
 
                     await ProcessMessageAsync(routingKey, message);
 
-                    // Acknowledge the message
                     _channel.BasicAck(eventArgs.DeliveryTag, false);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing user event message");
-                    // Negative acknowledgment, requeue the message
                     _channel.BasicNack(eventArgs.DeliveryTag, false, true);
                 }
             };
 
-            // Start consuming from the queue
             _channel.BasicConsume(queue: "notification_service_user_events", autoAck: false, consumer: consumer);
 
             return Task.CompletedTask;
@@ -133,7 +127,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     return;
                 }
 
-                // Create notification
                 var notification = new Notification
                 {
                     Type = "UserRegistered",
@@ -142,7 +135,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     Data = new { userRegistered.UserId, userRegistered.Username }
                 };
 
-                // Send notification to the specific user
                 await notificationService.SendToUserAsync(userRegistered.UserId, notification);
 
                 _logger.LogInformation($"Sent UserRegistered notification to user {userRegistered.UserId}");
@@ -164,7 +156,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     return;
                 }
 
-                // Create notification
                 var notification = new Notification
                 {
                     Type = "UserUpdated",
@@ -173,7 +164,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     Data = new { userUpdated.UserId, userUpdated.Username }
                 };
 
-                // Send notification to the specific user
                 await notificationService.SendToUserAsync(userUpdated.UserId, notification);
 
                 _logger.LogInformation($"Sent UserUpdated notification to user {userUpdated.UserId}");
@@ -195,7 +185,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     return;
                 }
 
-                // No need to send notification to the user since their account is deleted
                 _logger.LogInformation($"Received UserDeleted event for user {userDeleted.UserId}");
             }
             catch (Exception ex)

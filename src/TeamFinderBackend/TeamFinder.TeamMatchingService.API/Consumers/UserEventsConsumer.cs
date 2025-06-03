@@ -34,14 +34,12 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
                 _connection = factory.CreateConnection();
                 _channel = _connection.CreateModel();
 
-                // Declare the exchange
                 _channel.ExchangeDeclare(
                     exchange: _exchangeName,
                     type: ExchangeType.Topic,
                     durable: true,
                     autoDelete: false);
 
-                // Declare the queue
                 var queueName = "team_service_user_events";
                 _channel.QueueDeclare(
                     queue: queueName,
@@ -49,7 +47,6 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
                     exclusive: false,
                     autoDelete: false);
 
-                // Bind the queue to the exchange with routing keys
                 _channel.QueueBind(queue: queueName, exchange: _exchangeName, routingKey: "user.registered");
                 _channel.QueueBind(queue: queueName, exchange: _exchangeName, routingKey: "user.updated");
                 _channel.QueueBind(queue: queueName, exchange: _exchangeName, routingKey: "user.deleted");
@@ -83,18 +80,15 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
 
                     await ProcessMessageAsync(routingKey, message);
 
-                    // Acknowledge the message
                     _channel.BasicAck(eventArgs.DeliveryTag, false);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing message");
-                    // Negative acknowledgment, requeue the message
                     _channel.BasicNack(eventArgs.DeliveryTag, false, true);
                 }
             };
 
-            // Start consuming from the queue
             _channel.BasicConsume(queue: "team_service_user_events", autoAck: false, consumer: consumer);
 
             return Task.CompletedTask;
@@ -135,7 +129,6 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
                     return;
                 }
 
-                // Check if user already exists
                 var existingUser = await dbContext.Users.FindAsync(userRegistered.UserId);
                 if (existingUser != null)
                 {
@@ -143,13 +136,11 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
                     return;
                 }
 
-                // Create a new user in the team service database
                 var user = new User
                 {
                     Id = userRegistered.UserId,
                     Username = userRegistered.Username,
                     Email = userRegistered.Email
-                    // Other properties will be null/default for now
                 };
 
                 dbContext.Users.Add(user);
@@ -174,7 +165,6 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
                     return;
                 }
 
-                // Find the user
                 var user = await dbContext.Users.FindAsync(userUpdated.UserId);
                 if (user == null)
                 {
@@ -182,11 +172,9 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
                     return;
                 }
 
-                // Update the user properties
                 user.Username = userUpdated.Username;
                 user.Email = userUpdated.Email;
 
-                // Update team member username in all teams
                 var teamMembers = await dbContext.TeamMembers
                     .Where(tm => tm.UserId == userUpdated.UserId)
                     .ToListAsync();
@@ -216,7 +204,6 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
                     return;
                 }
 
-                // Find the user
                 var user = await dbContext.Users.FindAsync(userDeleted.UserId);
                 if (user == null)
                 {
@@ -224,12 +211,10 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
                     return;
                 }
 
-                // Find all teams owned by the user
                 var ownedTeams = await dbContext.Teams
                     .Where(t => t.OwnerId == userDeleted.UserId)
                     .ToListAsync();
 
-                // Delete owned teams and their members
                 foreach (var team in ownedTeams)
                 {
                     var teamMembers = await dbContext.TeamMembers
@@ -240,14 +225,12 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
                     dbContext.Teams.Remove(team);
                 }
 
-                // Remove user from all teams where they are a member
                 var teamMemberships = await dbContext.TeamMembers
                     .Where(tm => tm.UserId == userDeleted.UserId)
                     .ToListAsync();
 
                 dbContext.TeamMembers.RemoveRange(teamMemberships);
 
-                // Delete the user
                 dbContext.Users.Remove(user);
                 await dbContext.SaveChangesAsync();
 
@@ -267,7 +250,6 @@ namespace TeamFinder.TeamMatchingService.API.Consumers
         }
     }
 
-    // Event classes for deserialization
     public class UserRegisteredEvent
     {
         public Guid UserId { get; set; }

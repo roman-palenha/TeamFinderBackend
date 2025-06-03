@@ -22,12 +22,10 @@ const ProfilePage = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     
-    // Clear field-specific error when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
     
-    // Clear success/error messages when user makes changes
     if (successMessage || submitError) {
       setSuccessMessage('');
       setSubmitError('');
@@ -37,31 +35,26 @@ const ProfilePage = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    // Validate username
     if (!formData.username.trim()) {
       newErrors.username = 'Username is required';
     } else if (formData.username.length < 3) {
       newErrors.username = 'Username must be at least 3 characters';
     }
-    
-    // Validate email
+
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
     
-    // Validate gaming platform
     if (!formData.gamingPlatform) {
       newErrors.gamingPlatform = 'Please select your gaming platform';
     }
     
-    // Validate preferred game
     if (!formData.preferredGame) {
       newErrors.preferredGame = 'Please enter your preferred game';
     }
-    
-    // Validate skill level
+
     if (!formData.skillLevel) {
       newErrors.skillLevel = 'Please select your skill level';
     }
@@ -72,21 +65,18 @@ const ProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
     
-    // Clear previous errors and messages
     setErrors({});
     setSubmitError('');
     setSuccessMessage('');
     setIsSubmitting(true);
     
     try {
-      // Call updateProfile function from Auth context
       const result = await updateProfile(formData);
       
       if (result.success) {

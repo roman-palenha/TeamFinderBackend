@@ -17,20 +17,17 @@ namespace TeamFinder.TeamMatchingService.API.Services
 
         public async Task<TeamDto> CreateTeamAsync(CreateTeamRequest request)
         {
-            // Check if team name is already taken
             if (await _context.Teams.AnyAsync(t => t.Name == request.Name))
             {
                 throw new InvalidOperationException("Team name already exists");
             }
 
-            // Check if user exists
             var user = await _context.Users.FindAsync(request.OwnerId);
             if (user == null)
             {
                 throw new KeyNotFoundException("User not found");
             }
 
-            // Create new team
             var team = new Team
             {
                 Id = Guid.NewGuid(),
@@ -44,7 +41,6 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 IsOpen = true
             };
 
-            // Add owner as first team member
             var teamMember = new TeamMember
             {
                 Id = Guid.NewGuid(),
@@ -55,12 +51,10 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 Role = TeamRole.Owner
             };
 
-            // Save to database
             _context.Teams.Add(team);
             _context.TeamMembers.Add(teamMember);
             await _context.SaveChangesAsync();
 
-            // Publish team created event
             await _messagePublisher.PublishTeamCreatedAsync(new TeamCreatedEvent
             {
                 TeamId = team.Id,
@@ -68,7 +62,6 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 OwnerId = team.OwnerId
             });
 
-            // Return DTO with the owner as first member
             return new TeamDto
             {
                 Id = team.Id,
@@ -96,7 +89,6 @@ namespace TeamFinder.TeamMatchingService.API.Services
 
         public async Task<TeamDto> GetTeamByIdAsync(Guid id)
         {
-            // Get team with its members
             var team = await _context.Teams
                 .Include(t => t.Members)
                 .FirstOrDefaultAsync(t => t.Id == id);
@@ -106,16 +98,13 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 throw new KeyNotFoundException("Team not found");
             }
 
-            // Map to DTO
             return MapTeamToDto(team);
         }
 
         public async Task<IEnumerable<TeamDto>> GetTeamsAsync(string? game = null, string? platform = null, string? skillLevel = null)
         {
-            // Start with all teams
             IQueryable<Team> query = _context.Teams.Include(t => t.Members);
 
-            // Apply filters if provided
             if (!string.IsNullOrEmpty(game))
             {
                 query = query.Where(t => t.Game == game);
@@ -131,16 +120,13 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 query = query.Where(t => t.SkillLevel == skillLevel);
             }
 
-            // Get result
             var teams = await query.ToListAsync();
 
-            // Map to DTOs
             return teams.Select(MapTeamToDto);
         }
 
         public async Task<TeamDto> JoinTeamAsync(Guid teamId, JoinTeamRequest request)
         {
-            // Get team
             var team = await _context.Teams
                 .Include(t => t.Members)
                 .FirstOrDefaultAsync(t => t.Id == teamId);
@@ -150,32 +136,27 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 throw new KeyNotFoundException("Team not found");
             }
 
-            // Check if team is open for new members
             if (!team.IsOpen)
             {
                 throw new InvalidOperationException("Team is not open for new members");
             }
 
-            // Check if team is full
             if (team.Members.Count >= team.MaxPlayers)
             {
                 throw new InvalidOperationException("Team is already full");
             }
 
-            // Check if user is already a member
             if (team.Members.Any(m => m.UserId == request.UserId))
             {
                 throw new InvalidOperationException("User is already a member of this team");
             }
 
-            // Check if user exists
             var user = await _context.Users.FindAsync(request.UserId);
             if (user == null)
             {
                 throw new KeyNotFoundException("User not found");
             }
 
-            // Add user to team
             var teamMember = new TeamMember
             {
                 Id = Guid.NewGuid(),
@@ -189,7 +170,6 @@ namespace TeamFinder.TeamMatchingService.API.Services
             _context.TeamMembers.Add(teamMember);
             await _context.SaveChangesAsync();
 
-            // Publish team joined event
             await _messagePublisher.PublishTeamJoinedAsync(new TeamJoinedEvent
             {
                 TeamId = team.Id,
@@ -198,13 +178,11 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 Username = request.Username
             });
 
-            // Return updated team
             return MapTeamToDto(team);
         }
 
         public async Task<bool> LeaveTeamAsync(Guid teamId, Guid userId)
         {
-            // Get team member
             var teamMember = await _context.TeamMembers
                 .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
 
@@ -213,7 +191,6 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 return false;
             }
 
-            // Get team
             var team = await _context.Teams
                 .Include(t => t.Members)
                 .FirstOrDefaultAsync(t => t.Id == teamId);
@@ -223,18 +200,14 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 return false;
             }
 
-            // Check if user is the owner
             if (teamMember.Role == TeamRole.Owner)
             {
-                // Owner can't leave, they must delete the team or transfer ownership
                 throw new InvalidOperationException("Team owner cannot leave the team. Transfer ownership or delete the team.");
             }
 
-            // Remove team member
             _context.TeamMembers.Remove(teamMember);
             await _context.SaveChangesAsync();
 
-            // Publish team left event
             await _messagePublisher.PublishTeamLeftAsync(new TeamLeftEvent
             {
                 TeamId = team.Id,
@@ -248,7 +221,6 @@ namespace TeamFinder.TeamMatchingService.API.Services
 
         public async Task<bool> DeleteTeamAsync(Guid teamId, Guid userId)
         {
-            // Get team
             var team = await _context.Teams
                 .Include(t => t.Members)
                 .FirstOrDefaultAsync(t => t.Id == teamId);
@@ -258,18 +230,15 @@ namespace TeamFinder.TeamMatchingService.API.Services
                 return false;
             }
 
-            // Check if user is the owner
             if (team.OwnerId != userId)
             {
                 throw new UnauthorizedAccessException("Only the team owner can delete the team");
             }
 
-            // Delete team and its members
             _context.TeamMembers.RemoveRange(team.Members);
             _context.Teams.Remove(team);
             await _context.SaveChangesAsync();
 
-            // Publish team deleted event
             await _messagePublisher.PublishTeamDeletedAsync(new TeamDeletedEvent
             {
                 TeamId = team.Id,
@@ -281,7 +250,6 @@ namespace TeamFinder.TeamMatchingService.API.Services
 
         public async Task<IEnumerable<TeamDto>> MatchTeamAsync(TeamMatchRequest request)
         {
-            // Find teams that match the criteria and have open slots
             var matchingTeams = await _context.Teams
                 .Include(t => t.Members)
                 .Where(t =>
@@ -292,15 +260,12 @@ namespace TeamFinder.TeamMatchingService.API.Services
                     t.Members.Count < t.MaxPlayers)
                 .ToListAsync();
 
-            // Order by available slots (teams with more open slots first)
             var orderedTeams = matchingTeams
                 .OrderByDescending(t => t.MaxPlayers - t.Members.Count);
 
-            // Map to DTOs
             return orderedTeams.Select(MapTeamToDto);
         }
 
-        // Helper method to map Team entity to TeamDto
         private TeamDto MapTeamToDto(Team team)
         {
             return new TeamDto

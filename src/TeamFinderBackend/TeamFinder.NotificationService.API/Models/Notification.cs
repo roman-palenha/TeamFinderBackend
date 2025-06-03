@@ -8,8 +8,6 @@
         public object? Data { get; set; }
     }
 
-    // Event classes for RabbitMQ consumers
-    // User Events
     public class UserRegisteredEvent
     {
         public Guid UserId { get; set; }

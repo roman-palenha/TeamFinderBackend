@@ -34,9 +34,7 @@ namespace TeamFinder.TeamMatchingService.API.Services
             }
             catch (Exception ex)
             {
-                // Log the error but allow the service to start without RabbitMQ
                 Console.WriteLine($"Failed to connect to RabbitMQ: {ex.Message}");
-                // In production, you might want to use a logger or implement retry logic
             }
         }
 
@@ -64,7 +62,6 @@ namespace TeamFinder.TeamMatchingService.API.Services
         {
             if (_channel == null || !_connection.IsOpen)
             {
-                // Log the error but don't throw an exception to allow the service to continue working
                 Console.WriteLine("RabbitMQ connection not available. Message not published.");
                 return Task.CompletedTask;
             }
@@ -88,7 +85,6 @@ namespace TeamFinder.TeamMatchingService.API.Services
             }
             catch (Exception ex)
             {
-                // Log the error
                 Console.WriteLine($"Failed to publish message: {ex.Message}");
                 return Task.CompletedTask;
             }

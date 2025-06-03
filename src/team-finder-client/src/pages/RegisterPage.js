@@ -32,7 +32,6 @@ const RegisterPage = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     
-    // Clear field-specific error when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -41,7 +40,6 @@ const RegisterPage = () => {
   const handleSelectChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
     
-    // Clear field-specific error when user makes a selection
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -50,45 +48,38 @@ const RegisterPage = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    // Validate username
     if (!formData.username.trim()) {
       newErrors.username = 'Username is required';
     } else if (formData.username.length < 3) {
       newErrors.username = 'Username must be at least 3 characters';
     }
     
-    // Validate email
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
     
-    // Validate password
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
     
-    // Validate confirm password
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
-    // Validate gaming platform
     if (!formData.gamingPlatform) {
       newErrors.gamingPlatform = 'Please select your gaming platform';
     }
     
-    // Validate preferred game
     if (!formData.preferredGame) {
       newErrors.preferredGame = 'Please enter your preferred game';
     }
     
-    // Validate skill level
     if (!formData.skillLevel) {
       newErrors.skillLevel = 'Please select your skill level';
     }
@@ -99,20 +90,17 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
     
-    // Clear previous errors
     setErrors({});
     setSubmitError('');
     setIsSubmitting(true);
     
     try {
-      // Prepare registration data
       const registrationData = {
         username: formData.username,
         email: formData.email,
@@ -122,14 +110,12 @@ const RegisterPage = () => {
         skillLevel: formData.skillLevel
       };
       
-      // Call register function from Auth context
+
       const result = await register(registrationData);
       
       if (result.success) {
-        // Registration successful, navigate to dashboard
         navigate('/dashboard');
       } else {
-        // Show error message
         setSubmitError(result.error);
       }
     } catch (error) {

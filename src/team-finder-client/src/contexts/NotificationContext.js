@@ -15,10 +15,8 @@ export function NotificationProvider({ children }) {
   const [connectionEstablished, setConnectionEstablished] = useState(false);
   const { currentUser, isAuthenticated } = useAuth();
   
-  // Initialize SignalR connection
   useEffect(() => {
     if (isAuthenticated && currentUser) {
-      // Create the connection
       const newConnection = new HubConnectionBuilder()
         .withUrl('http://localhost:5102/notificationHub')
         .configureLogging(LogLevel.Information)
@@ -29,7 +27,6 @@ export function NotificationProvider({ children }) {
     }
   }, [isAuthenticated, currentUser]);
   
-  // Start the connection
   useEffect(() => {
     if (connection && isAuthenticated && currentUser) {
       connection.start()
@@ -37,34 +34,28 @@ export function NotificationProvider({ children }) {
           console.log('Connected to notification hub');
           setConnectionEstablished(true);
           
-          // Join user group
           connection.invoke('JoinUserGroup', currentUser.id.toString())
             .catch(err => console.error('Error joining user group:', err));
         })
         .catch(err => {
           console.error('Error connecting to notification hub:', err);
-          // Try to reconnect after 5 seconds
           setTimeout(() => {
             setConnection(null);
           }, 5000);
         });
       
-      // Handle connection close
       connection.onclose(() => {
         console.log('Connection closed');
         setConnectionEstablished(false);
       });
       
-      // Listen for notifications
       connection.on('ReceiveNotification', notification => {
         console.log('Notification received:', notification);
         setNotifications(prev => [notification, ...prev]);
         
-        // Show toast notification
         displayToast(notification);
       });
       
-      // Clean up on unmount
       return () => {
         if (connection.state === 'Connected') {
           connection.stop();
@@ -73,7 +64,6 @@ export function NotificationProvider({ children }) {
     }
   }, [connection, isAuthenticated, currentUser]);
   
-  // Join team group
   const joinTeamGroup = async (teamId) => {
     if (connectionEstablished && connection) {
       try {
@@ -85,7 +75,6 @@ export function NotificationProvider({ children }) {
     }
   };
   
-  // Leave team group
   const leaveTeamGroup = async (teamId) => {
     if (connectionEstablished && connection) {
       try {
@@ -97,7 +86,6 @@ export function NotificationProvider({ children }) {
     }
   };
   
-  // Display toast based on notification type
   const displayToast = (notification) => {
     const { type, message } = notification;
     
@@ -123,7 +111,6 @@ export function NotificationProvider({ children }) {
     }
   };
   
-  // Clear notifications
   const clearNotifications = () => {
     setNotifications([]);
   };

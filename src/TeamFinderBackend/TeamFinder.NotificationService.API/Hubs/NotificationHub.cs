@@ -23,28 +23,24 @@ namespace TeamFinder.NotificationService.API.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        // Method to join a user-specific notification group
         public async Task JoinUserGroup(string userId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{userId}");
             _logger.LogInformation($"Client {Context.ConnectionId} joined user group: user-{userId}");
         }
 
-        // Method to join a team-specific notification group
         public async Task JoinTeamGroup(string teamId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, $"team-{teamId}");
             _logger.LogInformation($"Client {Context.ConnectionId} joined team group: team-{teamId}");
         }
 
-        // Method to leave a user-specific notification group
         public async Task LeaveUserGroup(string userId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user-{userId}");
             _logger.LogInformation($"Client {Context.ConnectionId} left user group: user-{userId}");
         }
 
-        // Method to leave a team-specific notification group
         public async Task LeaveTeamGroup(string teamId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"team-{teamId}");

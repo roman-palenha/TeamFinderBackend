@@ -31,7 +31,6 @@
         Member
     }
 
-    // DTOs
     public class TeamDto
     {
         public Guid Id { get; set; }

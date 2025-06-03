@@ -35,14 +35,12 @@ namespace TeamFinder.NotificationService.API.Consumers
                 _connection = factory.CreateConnection();
                 _channel = _connection.CreateModel();
 
-                // Declare the exchange
                 _channel.ExchangeDeclare(
                     exchange: _exchangeName,
                     type: ExchangeType.Topic,
                     durable: true,
                     autoDelete: false);
 
-                // Declare the queue
                 var queueName = "notification_service_team_events";
                 _channel.QueueDeclare(
                     queue: queueName,
@@ -50,7 +48,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     exclusive: false,
                     autoDelete: false);
 
-                // Bind the queue to the exchange with routing keys
                 _channel.QueueBind(queue: queueName, exchange: _exchangeName, routingKey: "team.created");
                 _channel.QueueBind(queue: queueName, exchange: _exchangeName, routingKey: "team.joined");
                 _channel.QueueBind(queue: queueName, exchange: _exchangeName, routingKey: "team.left");
@@ -85,18 +82,15 @@ namespace TeamFinder.NotificationService.API.Consumers
 
                     await ProcessMessageAsync(routingKey, message);
 
-                    // Acknowledge the message
                     _channel.BasicAck(eventArgs.DeliveryTag, false);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing team event message");
-                    // Negative acknowledgment, requeue the message
                     _channel.BasicNack(eventArgs.DeliveryTag, false, true);
                 }
             };
 
-            // Start consuming from the queue
             _channel.BasicConsume(queue: "notification_service_team_events", autoAck: false, consumer: consumer);
 
             return Task.CompletedTask;
@@ -138,7 +132,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     return;
                 }
 
-                // Create notification for the team owner
                 var ownerNotification = new Notification
                 {
                     Type = "TeamCreated",
@@ -147,7 +140,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     Data = new { teamCreated.TeamId, teamCreated.TeamName, teamCreated.OwnerId }
                 };
 
-                // Send notification to the team owner
                 await notificationService.SendToUserAsync(teamCreated.OwnerId, ownerNotification);
 
                 _logger.LogInformation($"Sent TeamCreated notification to user {teamCreated.OwnerId} for team {teamCreated.TeamId}");
@@ -169,7 +161,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     return;
                 }
 
-                // Create notification for the user who joined
                 var userNotification = new Notification
                 {
                     Type = "TeamJoined",
@@ -178,10 +169,8 @@ namespace TeamFinder.NotificationService.API.Consumers
                     Data = new { teamJoined.TeamId, teamJoined.TeamName, teamJoined.UserId, teamJoined.Username }
                 };
 
-                // Send notification to the user who joined
                 await notificationService.SendToUserAsync(teamJoined.UserId, userNotification);
 
-                // Create notification for the team members
                 var teamNotification = new Notification
                 {
                     Type = "TeamMemberJoined",
@@ -190,7 +179,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     Data = new { teamJoined.TeamId, teamJoined.TeamName, teamJoined.UserId, teamJoined.Username }
                 };
 
-                // Send notification to all team members
                 await notificationService.SendToTeamAsync(teamJoined.TeamId, teamNotification);
 
                 _logger.LogInformation($"Sent TeamJoined notifications for user {teamJoined.UserId} in team {teamJoined.TeamId}");
@@ -212,7 +200,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     return;
                 }
 
-                // Create notification for the user who left
                 var userNotification = new Notification
                 {
                     Type = "TeamLeft",
@@ -221,10 +208,8 @@ namespace TeamFinder.NotificationService.API.Consumers
                     Data = new { teamLeft.TeamId, teamLeft.TeamName, teamLeft.UserId, teamLeft.Username }
                 };
 
-                // Send notification to the user who left
                 await notificationService.SendToUserAsync(teamLeft.UserId, userNotification);
 
-                // Create notification for the team members
                 var teamNotification = new Notification
                 {
                     Type = "TeamMemberLeft",
@@ -233,7 +218,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     Data = new { teamLeft.TeamId, teamLeft.TeamName, teamLeft.UserId, teamLeft.Username }
                 };
 
-                // Send notification to all team members
                 await notificationService.SendToTeamAsync(teamLeft.TeamId, teamNotification);
 
                 _logger.LogInformation($"Sent TeamLeft notifications for user {teamLeft.UserId} in team {teamLeft.TeamId}");
@@ -255,7 +239,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     return;
                 }
 
-                // Create notification for all team members
                 var teamNotification = new Notification
                 {
                     Type = "TeamDeleted",
@@ -264,7 +247,6 @@ namespace TeamFinder.NotificationService.API.Consumers
                     Data = new { teamDeleted.TeamId, teamDeleted.TeamName }
                 };
 
-                // Send notification to all team members
                 await notificationService.SendToTeamAsync(teamDeleted.TeamId, teamNotification);
 
                 _logger.LogInformation($"Sent TeamDeleted notification for team {teamDeleted.TeamId}");

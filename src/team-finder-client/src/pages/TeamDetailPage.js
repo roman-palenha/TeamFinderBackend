@@ -46,25 +46,24 @@ const TeamDetailPage = () => {
   const [error, setError] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isActionInProgress, setIsActionInProgress] = useState(false);
-  
-  // Check if current user is the team owner
+
   const isOwner = team && currentUser && team.ownerId === currentUser.username;
   
-  // Check if current user is a member of this team
+
   const isMember = team && currentUser && team.members.some(member => member.userId === currentUser.username);
   
-  // Check if team is full
+
   const isTeamFull = team && team.currentPlayers >= team.maxPlayers;
   
   useEffect(() => {
     fetchTeamDetails();
     
-    // Join the team's notification group when component mounts
+
     if (id) {
       joinTeamGroup(id);
     }
     
-    // Leave the team's notification group when component unmounts
+
     return () => {
       if (id) {
         leaveTeamGroup(id);
@@ -127,7 +126,7 @@ const TeamDetailPage = () => {
       const result = await leaveTeam(id, currentUser.username);
       
       if (result.success) {
-        fetchTeamDetails(); // Refresh team data
+        fetchTeamDetails();
       } else {
         setError(result.error);
       }
@@ -162,7 +161,7 @@ const TeamDetailPage = () => {
     }
   };
   
-  // Helper function to render role icon
+
   const getRoleIcon = (role) => {
     switch (role) {
       case 'Owner':
@@ -174,7 +173,7 @@ const TeamDetailPage = () => {
     }
   };
   
-  // Helper to get initials from username
+
   const getInitials = (username) => {
     if (!username) return '?';
     return username.charAt(0).toUpperCase();

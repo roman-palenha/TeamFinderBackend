@@ -26,7 +26,6 @@ const LoginPage = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     
-    // Clear field-specific error when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -35,12 +34,10 @@ const LoginPage = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    // Validate email
     if (!formData.email) {
       newErrors.email = 'Email is required';
     }
     
-    // Validate password
     if (!formData.password) {
       newErrors.password = 'Password is required';
     }
@@ -51,27 +48,22 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
     
-    // Clear previous errors
     setErrors({});
     setSubmitError('');
     setIsSubmitting(true);
     
     try {
-      // Call login function from Auth context
       const result = await login(formData);
       
       if (result.success) {
-        // Login successful, navigate to dashboard
         navigate('/dashboard');
       } else {
-        // Show error message
         setSubmitError(result.error);
       }
     } catch (error) {

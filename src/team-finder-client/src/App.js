@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 
 import NavBar from './components/NavBar';
-import DebugInfo from './components/DebugInfo'; // Add this import
+import DebugInfo from './components/DebugInfo';
 import HomePage from './pages/HomePage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -42,14 +42,12 @@ function App() {
   );
 }
 
-// Route guard for routes that require authentication
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
   
   return isAuthenticated ? children : <Navigate to="/login" />;
 }
 
-// Route guard for routes that are only accessible when not authenticated
 function PublicRoute({ children }) {
   const { isAuthenticated } = useAuth();
   

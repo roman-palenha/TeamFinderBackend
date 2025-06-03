@@ -23,7 +23,6 @@ namespace TeamFinder.UserService.API.Services
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
-            // Check if user already exists
             if (await _context.Users.AnyAsync(u => u.Email == request.Email))
             {
                 throw new InvalidOperationException("User with this email already exists");
@@ -34,7 +33,6 @@ namespace TeamFinder.UserService.API.Services
                 throw new InvalidOperationException("Username is already taken");
             }
 
-            // Create new user
             var user = new User
             {
                 Id = Guid.NewGuid(),
@@ -47,11 +45,9 @@ namespace TeamFinder.UserService.API.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            // Save user to database
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // Publish user registered event
             await _messagePublisher.PublishUserRegisteredAsync(new UserRegisteredEvent
             {
                 UserId = user.Id,
@@ -59,10 +55,8 @@ namespace TeamFinder.UserService.API.Services
                 Email = user.Email
             });
 
-            // Generate token
             var token = GenerateJwtToken(user);
 
-            // Return response
             return new AuthResponse
             {
                 Token = token,
@@ -80,19 +74,15 @@ namespace TeamFinder.UserService.API.Services
 
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
-            // Find user by email
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == request.Email);
 
-            // Verify user exists and password is correct
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 throw new InvalidOperationException("Invalid email or password");
             }
 
-            // Generate token
             var token = GenerateJwtToken(user);
 
-            // Return response
             return new AuthResponse
             {
                 Token = token,
@@ -137,7 +127,6 @@ namespace TeamFinder.UserService.API.Services
                 throw new KeyNotFoundException("User not found");
             }
 
-            // Update user properties
             user.Username = userDto.Username;
             user.Email = userDto.Email;
             user.GamingPlatform = userDto.GamingPlatform;
@@ -146,7 +135,6 @@ namespace TeamFinder.UserService.API.Services
 
             await _context.SaveChangesAsync();
 
-            // Publish user updated event
             await _messagePublisher.PublishUserUpdatedAsync(new UserUpdatedEvent
             {
                 UserId = user.Id,
@@ -169,7 +157,6 @@ namespace TeamFinder.UserService.API.Services
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            // Publish user deleted event
             await _messagePublisher.PublishUserDeletedAsync(new UserDeletedEvent
             {
                 UserId = id

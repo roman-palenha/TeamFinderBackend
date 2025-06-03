@@ -21,25 +21,20 @@ const CreateTeamPage = () => {
     loaded: false
   });
   
-  // Load user data from context and localStorage
   useEffect(() => {
-    // Try to get user from context
     if (currentUser) {
       let userId = currentUser.id;
       
-      // Check different potential ID properties
       if (!userId) {
         userId = currentUser.userId || currentUser._id || currentUser.Id;
       }
       
-      // If we found an ID, set it
       if (userId) {
         setUserInfo({
           id: userId,
           loaded: true
         });
         
-        // Also set user preferences
         setFormData(prev => ({
           ...prev,
           game: currentUser.preferredGame || '',
@@ -49,7 +44,6 @@ const CreateTeamPage = () => {
       }
     }
     
-    // Fallback: try localStorage directly
     if (!userInfo.id) {
       try {
         const storedUser = localStorage.getItem('user');
@@ -63,7 +57,6 @@ const CreateTeamPage = () => {
               loaded: true
             });
             
-            // Also set user preferences if not already set
             if (!formData.game && !formData.platform && !formData.skillLevel) {
               setFormData(prev => ({
                 ...prev,
@@ -88,7 +81,6 @@ const CreateTeamPage = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     
-    // Clear field-specific error when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -97,29 +89,24 @@ const CreateTeamPage = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    // Validate team name
     if (!formData.name.trim()) {
       newErrors.name = 'Team name is required';
     } else if (formData.name.length < 3) {
       newErrors.name = 'Team name must be at least 3 characters';
     }
     
-    // Validate game
     if (!formData.game.trim()) {
       newErrors.game = 'Game is required';
     }
     
-    // Validate platform
     if (!formData.platform) {
       newErrors.platform = 'Platform is required';
     }
     
-    // Validate skill level
     if (!formData.skillLevel) {
       newErrors.skillLevel = 'Skill level is required';
     }
     
-    // Validate max players
     if (!formData.maxPlayers || formData.maxPlayers < 2) {
       newErrors.maxPlayers = 'Team must have at least 2 players';
     } else if (formData.maxPlayers > 20) {
@@ -132,26 +119,22 @@ const CreateTeamPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
     
-    // Check if user ID is available
     if (!userInfo.id) {
       setSubmitError('User information is not available. Please try again or log out and log back in.');
       return;
     }
     
-    // Clear previous errors
     setErrors({});
     setSubmitError('');
     setIsSubmitting(true);
     
     try {
-      // Prepare team data with explicit userId
       const teamData = {
         name: formData.name,
         game: formData.game,
@@ -163,14 +146,11 @@ const CreateTeamPage = () => {
       
       console.log('Creating team with data:', teamData);
       
-      // Call API to create team
       const result = await createTeam(teamData);
       
       if (result.success) {
-        // Navigate to the newly created team's page
         navigate(`/teams/${result.data.id}`);
       } else {
-        // Show error message
         setSubmitError(result.error);
       }
     } catch (error) {

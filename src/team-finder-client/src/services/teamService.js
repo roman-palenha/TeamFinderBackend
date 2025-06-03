@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5241/api/teams';
 
-// Helper function to add debugging info
+
 const logRequest = (type, url, data = null) => {
   console.log(`[TeamService] ${type} request to: ${url}`);
   if (data) {
@@ -10,7 +10,7 @@ const logRequest = (type, url, data = null) => {
   }
 };
 
-// Get all teams with optional filters
+
 export const getTeams = async (filters = {}) => {
   try {
     const { game, platform, skillLevel } = filters;
@@ -38,7 +38,6 @@ export const getTeams = async (filters = {}) => {
   }
 };
 
-// Get a team by ID
 export const getTeamById = async (id) => {
   try {
     logRequest('GET', `${API_URL}/${id}`);
@@ -53,10 +52,10 @@ export const getTeamById = async (id) => {
   }
 };
 
-// Create a new team
+
 export const createTeam = async (teamData) => {
   try {
-    // Ensure ownerId is properly set and is a valid GUID/UUID
+
     if (!teamData.ownerId) {
       console.error('Owner ID is missing from team data');
       return {
@@ -77,7 +76,6 @@ export const createTeam = async (teamData) => {
   }
 };
 
-// Join a team
 export const joinTeam = async (teamId, userData) => {
   try {
     logRequest('POST', `${API_URL}/${teamId}/join`, userData);
@@ -92,7 +90,7 @@ export const joinTeam = async (teamId, userData) => {
   }
 };
 
-// Leave a team
+
 export const leaveTeam = async (teamId, userId) => {
   try {
     logRequest('POST', `${API_URL}/${teamId}/leave`, { userId });
@@ -107,7 +105,7 @@ export const leaveTeam = async (teamId, userId) => {
   }
 };
 
-// Delete a team
+
 export const deleteTeam = async (teamId, userId) => {
   try {
     logRequest('DELETE', `${API_URL}/${teamId}?userId=${userId}`);
@@ -122,7 +120,6 @@ export const deleteTeam = async (teamId, userId) => {
   }
 };
 
-// Find matching teams
 export const matchTeams = async (criteria) => {
   try {
     logRequest('POST', `${API_URL}/match`, criteria);

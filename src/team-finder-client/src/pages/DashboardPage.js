@@ -34,7 +34,6 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchRecommendedTeams = async () => {
       try {
-        // Fetch teams that match the user's preferences
         const filters = {
           game: currentUser?.preferredGame || '',
           platform: currentUser?.gamingPlatform || '',
@@ -44,7 +43,7 @@ const DashboardPage = () => {
         const result = await getTeams(filters);
         
         if (result.success) {
-          setRecommendedTeams(result.data.slice(0, 3)); // Display top 3 teams
+          setRecommendedTeams(result.data.slice(0, 3));
         } else {
           setError(result.error);
         }
@@ -59,7 +58,6 @@ const DashboardPage = () => {
     fetchRecommendedTeams();
   }, [currentUser]);
   
-  // Helper function to get user initials for avatar
   const getInitials = (name) => {
     if (!name) return 'U';
     return name.charAt(0).toUpperCase();
